@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>兽之女王 EP1 · 互动短剧 Demo</title>
+<style>
+  :root{ --moon:#bcd0e8; --gold:#f0b54a; --amber:#ff9d2e; --bad:#e85a6b; --bg:#070b12; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#05080d;font-family:"Microsoft YaHei","PingFang SC",sans-serif;color:#eaf1fb;-webkit-tap-highlight-color:transparent}
+  #app{height:100%;display:flex;align-items:center;justify-content:center}
+  #frame{position:relative;height:min(96vh,860px);aspect-ratio:9/16;background:#000;border-radius:18px;overflow:hidden;box-shadow:0 0 0 1px #233247,0 18px 60px rgba(0,0,0,.6)}
+  video{width:100%;height:100%;object-fit:cover;background:#000;display:block}
+
+  .layer{position:absolute;inset:0;display:none;flex-direction:column;justify-content:flex-end;
+         background:linear-gradient(180deg,rgba(5,9,16,0) 40%,rgba(4,8,15,.55) 65%,rgba(3,6,12,.92) 100%);
+         padding:22px 18px 26px;gap:10px}
+  .layer.show{display:flex}
+
+  .qbar{position:absolute;top:0;left:0;right:0;padding:16px 18px;
+        background:linear-gradient(180deg,rgba(3,6,12,.85),rgba(3,6,12,0));font-size:14px;color:#d3e3f6}
+  .qbar b{color:var(--gold)}
+
+  .choices{display:flex;flex-direction:column;gap:11px}
+  .btn{appearance:none;border:1px solid #3a4f6b;background:rgba(18,30,46,.82);color:#eaf1fb;
+       font-size:15px;line-height:1.35;padding:13px 15px;border-radius:12px;text-align:left;cursor:pointer;
+       backdrop-filter:blur(2px);transition:transform .08s,border-color .15s,background .15s}
+  .btn:hover{border-color:var(--gold);background:rgba(30,44,64,.95)}
+  .btn:active{transform:scale(.985)}
+  .btn .k{color:var(--amber);font-weight:bold;margin-right:8px}
+
+  .center{justify-content:center;align-items:center;text-align:center;
+          background:radial-gradient(120% 80% at 50% 32%,rgba(28,40,62,.62),rgba(3,6,12,.96))}
+  .center h1{margin:0 0 6px;font-size:27px;letter-spacing:2px}
+  .center .sub{color:var(--gold);font-size:13px;letter-spacing:4px;margin-bottom:14px}
+  .center p{margin:4px 0;color:#9db4cf;font-size:14px;max-width:90%}
+  .cta{margin-top:22px;border:1px solid var(--gold);background:rgba(240,181,74,.14);color:#fff;
+       font-size:16px;padding:13px 32px;border-radius:30px;cursor:pointer}
+  .cta:hover{background:rgba(240,181,74,.26)}
+
+  .bad{justify-content:center;background:linear-gradient(160deg,rgba(58,22,32,.96),rgba(8,10,18,.98))}
+  .bad .tag{align-self:center;color:var(--bad);font-size:13px;letter-spacing:3px;margin-bottom:6px}
+  .bad h2{align-self:center;margin:0 0 14px;font-size:23px;color:#ffd6dc;text-align:center}
+  .bad .beats{background:rgba(0,0,0,.32);border-left:3px solid var(--bad);border-radius:8px;padding:12px 14px;margin:0 0 12px}
+  .bad .beats div{font-size:13.5px;color:#f0d9dd;line-height:1.55;margin:3px 0}
+  .bad .dlg{font-size:14px;color:#ffe9b0;line-height:1.6;margin:2px 0}
+  .bad .dlg .sp{color:#ff9fb0;margin-right:6px}
+  .bad .note{align-self:center;color:#7d6b6e;font-size:11.5px;margin:10px 0 16px;text-align:center}
+  .bad .row{display:flex;gap:10px;justify-content:center}
+  .bad .row button{border:1px solid #6a3a44;background:rgba(58,22,32,.6);color:#ffd6dc;
+                   font-size:14px;padding:11px 18px;border-radius:24px;cursor:pointer}
+  .bad .row button.primary{border-color:var(--gold);color:#fff;background:rgba(240,181,74,.14)}
+  .bad .row button:hover{filter:brightness(1.2)}
+
+  #hud{position:absolute;top:12px;right:14px;font-size:11px;color:#6f86a3;background:rgba(3,6,12,.5);
+       padding:3px 9px;border-radius:10px;z-index:5}
+  .hint{align-self:center;color:#7892ab;font-size:11.5px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="frame">
+    <video id="vid" playsinline preload="auto"></video>
+    <div id="hud">原片片段</div>
+
+    <div class="qbar" id="qbar" style="display:none"></div>
+
+    <!-- 开始屏 -->
+    <div class="layer center show" id="startLayer">
+      <h1>兽之女王</h1>
+      <div class="sub">QUEEN OF BEASTS · EP1</div>
+      <p>互动短剧 Demo</p>
+      <p>你是 Selene——被全校当成「什么都不是」的普通女孩，<br>却是狼王 Ronan 找了三年的「承月者」。</p>
+      <p style="color:#6f86a3;font-size:12.5px">正确路径播原片；选错走坏结局（暂以文字代替，视频待生成）</p>
+      <button class="cta" id="startBtn">▶ 开始</button>
+    </div>
+
+    <!-- 选项屏 -->
+    <div class="layer" id="choiceLayer">
+      <div class="choices" id="choices"></div>
+      <div class="hint">选对续播原片 · 选错走坏结局</div>
+    </div>
+
+    <!-- 坏结局屏 -->
+    <div class="layer bad" id="badLayer">
+      <div class="tag">BAD END</div>
+      <h2 id="badTitle"></h2>
+      <div class="beats" id="badBeats"></div>
+      <div id="badDlg"></div>
+      <div class="note" id="badNote">（此处为待生成片段 · 现以文字代替）</div>
+      <div class="row">
+        <button class="primary" id="badRetry">↻ 重开本节点</button>
+        <button id="badRestart">⟲ 从头开始</button>
+      </div>
+    </div>
+
+    <!-- 结束屏 -->
+    <div class="layer center" id="endLayer">
+      <h1 style="font-size:22px">🌙 钩子结尾</h1>
+      <p style="color:var(--gold)">「It's burning」</p>
+      <p>狼王的印记认出了你。<br>从今夜起，你不再是隐形的人。</p>
+      <p style="color:#6f86a3;font-size:12.5px">—— 待续 EP2 ——</p>
+      <button class="cta" id="endBtn">⟲ 再玩一次</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORY = {
+  segments: {
+    seg1: { src:"seg1_setup.mp4",   hud:"原片 0:00–1:38 冷开场+毕业羞辱", decision:"d1" },
+    seg2: { src:"seg2_forest.mp4",  hud:"原片 1:38–2:10 逃进月夜森林",     decision:"d2" },
+    seg3: { src:"seg3_wolf.mp4",    hud:"原片 2:10–2:48 狼王现身",         decision:"d3" },
+    seg4: { src:"seg4_ending.mp4",  hud:"原片 2:48–2:57 钩子结尾",         decision:"end" }
+  },
+  decisions: {
+    d1: { t:"1:38", q:"Brittany 和 Ethan 当众羞辱你、转身要走。你手里还攥着那份没送出去的礼物。怎么做？", replay:"seg1", options:[
+      { label:"咽下这口气，攥着礼物转身走开",        go:"seg2" },
+      { label:"冲上去，扇 Brittany 一巴掌",          bad:"end_slap" },
+      { label:"追上去抓住 Ethan，求他别走",          bad:"end_laughingstock" }
+    ]},
+    d2: { t:"2:10", q:"黑林里有动静，一双金色的眼睛亮了起来。你一个人，手无寸铁。", replay:"seg2", options:[
+      { label:"屏住呼吸，问一声「谁在那？」，站着没动", go:"seg3" },
+      { label:"转身就往密林深处跑",                    bad:"end_rogue" },
+      { label:"抄起地上的石头，朝那双眼睛砸过去",      bad:"end_brokenchance" }
+    ]},
+    d3: { t:"2:48", q:"他说找了你三年，掌心的月牙在褪。此刻他的胸口正发光发烫。伸手，还是退开？", replay:"seg3", options:[
+      { label:"伸手，按上他发光的胸口",      go:"seg4" },
+      { label:"后退，推开他，不碰",          bad:"end_markgone" },
+      { label:"转身逃进月圆的夜里",          bad:"end_alone" }
+    ]}
+  },
+  badEnds: {
+    end_slap:{ title:"💀 普通人打不过狼", replay:"seg1",
+      beats:["你抬手扇了 Brittany 一巴掌","她慢慢转回脸，眼睛亮起狼一样的金光","她那伙人从四面围上来","你只是个普通人——没有力量，没有血脉"],
+      dlg:[["你","I am not nothing!"],["Brittany","Wrong move, ordinary girl."]] },
+    end_laughingstock:{ title:"💀 全场的笑柄", replay:"seg1",
+      beats:["你追上去抓住 Ethan 的袖子","他把你的手指一根根掰开","周围的人笑出声","一支支手机举起来，对着你"],
+      dlg:[["你","Please, just look at me."],["Ethan","You're embarrassing yourself."]] },
+    end_rogue:{ title:"💀 林子里不止一头狼", replay:"seg2",
+      beats:["你转身冲进黑林深处","月光里又一双眼睛亮起来——不是琥珀色","一道影子从侧面扑过来","你被掀进落叶里，月光照着一只渐渐不动的手"],
+      dlg:[["你","Stay back—!"]] },
+    end_brokenchance:{ title:"💀 你砸碎了唯一的机会", replay:"seg2",
+      beats:["你抄起石头砸向那个影子","他没躲。是 Ronan。","他琥珀色的眼睛黯下去，掌心的月牙闪了一下，灭了","他转身走进黑暗，没有回头"],
+      dlg:[["你","Get away from me!"],["Ronan","Then it dies with you."]] },
+    end_markgone:{ title:"💀 三天，你用掉了最后一次", replay:"seg3",
+      beats:["你后退，推开他，不去碰那道光","他掌心的月牙褪成一片空白","你胸口刚亮起的微光也跟着灭了","他没有再看你一眼"],
+      dlg:[["你","I never asked to be your mate."],["Ronan","Three days. You just spent the last one."]] },
+    end_alone:{ title:"💀 月圆之夜，独自一人", replay:"seg3",
+      beats:["你转身逃进月圆的夜里","沾上他气味的你，在月光下隐隐发亮","山脊上，一双双金色的狼眼睁开——为狼王命定的猎物而来","为首那头，是 Brittany 的眼睛"],
+      dlg:[["Brittany（画外）","The King's mate, all alone. How generous."]] }
+  }
+};
+
+const vid   = document.getElementById('vid');
+const hud   = document.getElementById('hud');
+const qbar  = document.getElementById('qbar');
+const layers = { start:'startLayer', choice:'choiceLayer', bad:'badLayer', end:'endLayer' };
+function hideAll(){ Object.values(layers).forEach(id=>document.getElementById(id).classList.remove('show')); }
+function show(name){ hideAll(); document.getElementById(layers[name]).classList.add('show'); }
+
+let current = null;
+
+function playSegment(segId){
+  const seg = STORY.segments[segId];
+  current = segId;
+  hideAll(); qbar.style.display='none';
+  hud.textContent = seg.hud;
+  vid.src = seg.src;
+  vid.currentTime = 0;
+  const p = vid.play();
+  if(p && p.catch) p.catch(()=>{});
+}
+
+vid.addEventListener('ended', ()=>{
+  const seg = STORY.segments[current];
+  if(!seg) return;
+  if(seg.decision === 'end'){ show('end'); return; }
+  showDecision(seg.decision);
+});
+
+function showDecision(dId){
+  const d = STORY.decisions[dId];
+  qbar.style.display='block';
+  qbar.innerHTML = `<b>▶ ${d.t}</b> · ${d.q}`;
+  const box = document.getElementById('choices');
+  box.innerHTML = '';
+  const keys = ['A','B','C'];
+  d.options.forEach((opt,i)=>{
+    const b = document.createElement('button');
+    b.className = 'btn';
+    b.innerHTML = `<span class="k">${keys[i]}</span>${opt.label}`;
+    b.onclick = ()=>{ if(opt.go) playSegment(opt.go); else showBad(opt.bad); };
+    box.appendChild(b);
+  });
+  show('choice');
+}
+
+function showBad(badId){
+  const e = STORY.badEnds[badId];
+  qbar.style.display='none';
+  document.getElementById('badTitle').textContent = e.title;
+  document.getElementById('badBeats').innerHTML = e.beats.map(t=>`<div>· ${t}</div>`).join('');
+  document.getElementById('badDlg').innerHTML = e.dlg.map(([sp,l])=>`<div class="dlg"><span class="sp">${sp}：</span>${l}</div>`).join('');
+  document.getElementById('badRetry').onclick   = ()=>playSegment(e.replay);
+  document.getElementById('badRestart').onclick = ()=>playSegment('seg1');
+  try{ vid.pause(); }catch(_){}
+  show('bad');
+}
+
+document.getElementById('startBtn').onclick = ()=>playSegment('seg1');
+document.getElementById('endBtn').onclick   = ()=>playSegment('seg1');
+</script>
+</body>
+</html>
