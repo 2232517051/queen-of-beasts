@@ -71,7 +71,7 @@
       <div class="sub">QUEEN OF BEASTS · EP1</div>
       <p>互动短剧 Demo</p>
       <p>你是 Selene——被全校当成「什么都不是」的普通女孩，<br>却是狼王 Ronan 找了三年的「承月者」。</p>
-      <p style="color:#6f86a3;font-size:12.5px">正确路径播原片；选错走坏结局（暂以文字代替，视频待生成）</p>
+      <p style="color:#6f86a3;font-size:12.5px">正确路径播原片；选错走坏结局（1 条已生成视频，其余暂以文字代替）</p>
       <button class="cta" id="startBtn">▶ 开始</button>
     </div>
 
@@ -134,7 +134,7 @@ const STORY = {
     end_slap:{ title:"💀 普通人打不过狼", replay:"seg1",
       beats:["你抬手扇了 Brittany 一巴掌","她慢慢转回脸，眼睛亮起狼一样的金光","她那伙人从四面围上来","你只是个普通人——没有力量，没有血脉"],
       dlg:[["你","I am not nothing!"],["Brittany","Wrong move, ordinary girl."]] },
-    end_laughingstock:{ title:"💀 全场的笑柄", replay:"seg1",
+    end_laughingstock:{ title:"💀 全场的笑柄", replay:"seg1", video:"bad_laughingstock.mp4",
       beats:["你追上去抓住 Ethan 的袖子","他把你的手指一根根掰开","周围的人笑出声","一支支手机举起来，对着你"],
       dlg:[["你","Please, just look at me."],["Ethan","You're embarrassing yourself."]] },
     end_rogue:{ title:"💀 林子里不止一头狼", replay:"seg2",
@@ -160,9 +160,12 @@ function hideAll(){ Object.values(layers).forEach(id=>document.getElementById(id
 function show(name){ hideAll(); document.getElementById(layers[name]).classList.add('show'); }
 
 let current = null;
+let mode = 'segment';   // 'segment' | 'badvideo'
+let currentBad = null;
 
 function playSegment(segId){
   const seg = STORY.segments[segId];
+  mode = 'segment';
   current = segId;
   hideAll(); qbar.style.display='none';
   hud.textContent = seg.hud;
@@ -173,6 +176,7 @@ function playSegment(segId){
 }
 
 vid.addEventListener('ended', ()=>{
+  if(mode === 'badvideo'){ showBadCard(currentBad); return; }
   const seg = STORY.segments[current];
   if(!seg) return;
   if(seg.decision === 'end'){ show('end'); return; }
@@ -196,10 +200,32 @@ function showDecision(dId){
   show('choice');
 }
 
+function playBadVideo(badId){
+  const e = STORY.badEnds[badId];
+  mode = 'badvideo';
+  currentBad = badId;
+  hideAll(); qbar.style.display='none';
+  hud.textContent = '坏结局 · BAD END';
+  vid.src = e.video;
+  vid.currentTime = 0;
+  const p = vid.play();
+  if(p && p.catch) p.catch(()=>{});
+}
+
 function showBad(badId){
   const e = STORY.badEnds[badId];
+  if(e.video){ playBadVideo(badId); return; }  // 有片段 → 先播坏结局视频，播完再弹卡
+  showBadCard(badId);
+}
+
+function showBadCard(badId){
+  const e = STORY.badEnds[badId];
+  const hasVideo = !!e.video;
   qbar.style.display='none';
   document.getElementById('badTitle').textContent = e.title;
+  document.getElementById('badBeats').style.display = hasVideo ? 'none' : '';
+  document.getElementById('badDlg').style.display   = hasVideo ? 'none' : '';
+  document.getElementById('badNote').style.display  = hasVideo ? 'none' : '';
   document.getElementById('badBeats').innerHTML = e.beats.map(t=>`<div>· ${t}</div>`).join('');
   document.getElementById('badDlg').innerHTML = e.dlg.map(([sp,l])=>`<div class="dlg"><span class="sp">${sp}：</span>${l}</div>`).join('');
   document.getElementById('badRetry').onclick   = ()=>playSegment(e.replay);
