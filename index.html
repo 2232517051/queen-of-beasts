@@ -109,8 +109,8 @@
 const STORY = {
   segments: {
     seg1: { src:"seg1_setup.mp4",   hud:"原片 0:00–1:38 冷开场+毕业羞辱", decision:"d1" },
-    seg2: { src:"seg2_forest.mp4",  hud:"原片 1:38–2:10 逃进月夜森林",     decision:"d2" },
-    seg3: { src:"seg3_wolf.mp4",    hud:"原片 2:10–2:48 狼王现身",         decision:"d3" },
+    seg2: { src:"seg2_forest.mp4",  hud:"原片 1:38–2:21 月夜·狼王月下现身",  decision:"d2" },
+    seg3: { src:"seg3_wolf.mp4",    hud:"原片 2:21–2:48 月下贴近·三年追寻",  decision:"d3" },
     seg4: { src:"seg4_ending.mp4",  hud:"原片 2:48–2:57 钩子结尾",         decision:"end" }
   },
   decisions: {
@@ -119,7 +119,7 @@ const STORY = {
       { label:"冲上去，扇 Brittany 一巴掌",          bad:"end_slap" },
       { label:"追上去抓住 Ethan，求他别走",          bad:"end_laughingstock" }
     ]},
-    d2: { t:"2:10", q:"黑林里有动静，一双金色的眼睛亮了起来。你一个人，手无寸铁。", replay:"seg2", options:[
+    d2: { t:"2:21", q:"他从月光里走出来，一双眼睛烧着金色的光，一步步朝你逼近。你一个人，手无寸铁。", replay:"seg2", options:[
       { label:"屏住呼吸，站在原地，没有逃", go:"seg3" },
       { label:"转身就往密林深处跑",                    bad:"end_rogue" },
       { label:"抄起地上的石头，朝那双眼睛砸过去",      bad:"end_brokenchance" }
